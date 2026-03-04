@@ -24,4 +24,4 @@ const connectDB = async () => {
 };
 
 
-export { getPool, connectDB };
+export { pool, getPool, connectDB };
