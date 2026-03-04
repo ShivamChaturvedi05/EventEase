@@ -31,4 +31,16 @@ const createEvent = asyncHandler(async (req, res) => {
     );
 });
 
-export { createEvent };
+const getAllEvents = asyncHandler(async (req, res) => {
+    const events = await pool.query(
+        `SELECT * FROM events 
+         WHERE status = 'upcoming' 
+         ORDER BY event_date ASC`
+    );
+
+    return res.status(200).json(
+        new ApiResponse(200, events.rows, "Events fetched successfully!")
+    );
+});
+
+export { createEvent, getAllEvents };
