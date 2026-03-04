@@ -4,6 +4,8 @@ const { Pool } = pg;
 
 let pool;
 
+const getPool = () => pool;
+
 const connectDB = async () => {
     try {
         pool = new Pool({
@@ -22,4 +24,4 @@ const connectDB = async () => {
 };
 
 
-export { pool, connectDB };
+export { getPool, connectDB };
