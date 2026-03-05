@@ -4,9 +4,11 @@ import { ApiResponse } from '../utils/ApiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 const createEvent = asyncHandler(async (req, res) => {
-    const { title, description, event_date, venue, price, total_seats, organizer_id } = req.body;
+    const { title, description, event_date, venue, price, total_seats } = req.body;
 
-    if (!title || !description || !event_date || !venue || price === undefined || !total_seats || !organizer_id) {
+    const organizer_id = req.user.id; 
+
+    if (!title || !description || !event_date || !venue || price === undefined || !total_seats) {
         throw new ApiError(400, "All event fields are required");
     }
 
