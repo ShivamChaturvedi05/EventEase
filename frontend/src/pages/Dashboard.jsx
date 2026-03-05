@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
+import CreateEventForm from '../components/CreateEventForm';
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -56,11 +57,10 @@ const Dashboard = () => {
                 {/* --- CONDITIONAL RENDERING --- */}
                 {user.role === 'organizer' ? (
                     
-                    /* ORGANIZER VIEW */
                     <div className="bg-purple-50 p-6 rounded-xl border border-purple-200">
-                        <h2 className="text-2xl font-bold text-purple-800 mb-4">Organizer Dashboard</h2>
-                        <p className="text-purple-600">Here we will add the form to create new events like hackathons and meetups!</p>
-                        
+                        <h2 className="text-2xl font-bold text-purple-800 mb-2">Organizer Dashboard</h2>
+                        <p className="text-purple-600">Fill out the details below to host a new event.</p>
+                        <CreateEventForm />
                     </div>
 
                 ) : (
