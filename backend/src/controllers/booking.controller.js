@@ -61,4 +61,32 @@ const bookTicket = asyncHandler(async (req, res) => {
     }
 });
 
-export { bookTicket };
+
+const getUserBookings = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+
+    const query = `
+        SELECT 
+            b.id AS booking_id,
+            b.ticket_quantity,
+            b.total_amount,
+            b.payment_status,
+            b.booked_at,
+            e.id AS event_id,
+            e.title AS event_title,
+            e.event_date,
+            e.venue
+        FROM bookings b
+        JOIN events e ON b.event_id = e.id
+        WHERE b.user_id = $1
+        ORDER BY b.booked_at DESC;
+    `;
+
+    const result = await pool.query(query, [userId]);
+
+    return res.status(200).json(
+        new ApiResponse(200, result.rows, "User tickets fetched successfully!")
+    );
+});
+
+export { bookTicket, getUserBookings };
