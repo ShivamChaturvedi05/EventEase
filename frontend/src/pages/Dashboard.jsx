@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../api/axiosInstance';
 import CreateEventForm from '../components/CreateEventForm';
 import EventFeed from '../components/EventFeed';
+import OrganizerAnalytics from '../components/OrganizerAnalytics';
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -58,10 +59,13 @@ const Dashboard = () => {
                 {/* --- CONDITIONAL RENDERING --- */}
                 {user.role === 'organizer' ? (
                     
-                    <div className="bg-purple-50 p-6 rounded-xl border border-purple-200">
-                        <h2 className="text-2xl font-bold text-purple-800 mb-2">Organizer Dashboard</h2>
-                        <p className="text-purple-600">Fill out the details below to host a new event.</p>
-                        <CreateEventForm />
+                    <div className="space-y-8"> {/* Added space-y-8 to space out the sections */}
+                        <div className="bg-purple-50 p-6 rounded-xl border border-purple-200 shadow-sm">
+                            <h2 className="text-2xl font-bold text-purple-800 mb-2">Host a New Event</h2>
+                            <CreateEventForm />
+                        </div>
+
+                        <OrganizerAnalytics />
                     </div>
 
                 ) : (
