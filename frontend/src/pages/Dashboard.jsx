@@ -4,6 +4,7 @@ import axiosInstance from '../api/axiosInstance';
 import CreateEventForm from '../components/CreateEventForm';
 import EventFeed from '../components/EventFeed';
 import OrganizerAnalytics from '../components/OrganizerAnalytics';
+import MyTickets from '../components/MyTickets';
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -71,11 +72,15 @@ const Dashboard = () => {
                 ) : (
                     
                     /* ATTENDEE VIEW */
-                    <div className="bg-blue-50 p-6 rounded-xl border border-blue-200">
-                        <h2 className="text-2xl font-bold text-blue-800 mb-2">Attendee Dashboard</h2>
-                        <p className="text-blue-600">Discover and book tickets for the best upcoming events.</p>
+                    <div className="space-y-8">
+                        <div className="bg-blue-50 p-6 rounded-xl border border-blue-200">
+                            <h2 className="text-2xl font-bold text-blue-800 mb-2">Attendee Dashboard</h2>
+                            <p className="text-blue-600">Discover and book tickets for the best upcoming events.</p>
+                        </div>
 
                         <EventFeed />
+
+                        <MyTickets />
                     </div>
                     
                 )}
