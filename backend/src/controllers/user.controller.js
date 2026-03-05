@@ -7,25 +7,22 @@ import jwt from 'jsonwebtoken';
 
 const generateAccessAndRefreshTokens = async (userId) => {
     try {
-        // 1. Grab user data to put in the Access Token payload
+
         const userResult = await pool.query('SELECT id, email, role FROM users WHERE id = $1', [userId]);
         const user = userResult.rows[0];
 
-        // 2. Generate Access Token (Short lived)
         const accessToken = jwt.sign(
             { _id: user.id, email: user.email, role: user.role },
             process.env.ACCESS_TOKEN_SECRET,
             { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
         );
 
-        // 3. Generate Refresh Token (Long lived, only needs the ID)
         const refreshToken = jwt.sign(
             { _id: user.id },
             process.env.REFRESH_TOKEN_SECRET,
             { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
         );
 
-        // 4. Save the Refresh Token in the database
         await pool.query('UPDATE users SET refresh_token = $1 WHERE id = $2', [refreshToken, userId]);
 
         return { accessToken, refreshToken };
@@ -35,7 +32,6 @@ const generateAccessAndRefreshTokens = async (userId) => {
 };
 
 const registerUser = asyncHandler(async (req, res) => {
-    // 1. We now expect a password in the request body
     const { name, email, phone, role, password } = req.body;
 
     if (!name || !email || !phone || !password) {
@@ -48,16 +44,14 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(409, "A user with this email already exists");
     }
 
-    // 2. Hash the password using bcrypt (10 rounds of salting)
     const hashedPassword = await bcrypt.hash(password, 10);
     const userRole = role === 'organizer' ? 'organizer' : 'attendee';
 
-    // 3. Save the hashed password, NOT the plain text one
     const newUser = await pool.query(
         `INSERT INTO users (name, email, phone, role, password) 
          VALUES ($1, $2, $3, $4, $5) 
          RETURNING id, name, email, role, created_at`,
-        [name, email, phone, userRole, hashedPassword] // Insert hashed password
+        [name, email, phone, userRole, hashedPassword]
     );
 
     return res.status(201).json(
@@ -86,17 +80,14 @@ const loginUser = asyncHandler(async (req, res) => {
         throw new ApiError(401, "Invalid user credentials");
     }
 
-    // --- GENERATE BOTH TOKENS ---
     const { accessToken, refreshToken } = await generateAccessAndRefreshTokens(user.id);
 
-    // Remove sensitive info before sending to frontend
     delete user.password;
     delete user.refresh_token; 
 
-    // --- SEND TOKENS IN HTTP-ONLY COOKIES (The Pro Move) ---
     const options = {
-        httpOnly: true, // Prevents hackers from accessing cookies via JavaScript (XSS attacks)
-        secure: true    // Only sends cookies over HTTPS in production
+        httpOnly: true,
+        secure: true
     };
 
     return res
@@ -112,5 +103,5 @@ const loginUser = asyncHandler(async (req, res) => {
         );
 });
 
-// Export both functions
+
 export { registerUser, loginUser };

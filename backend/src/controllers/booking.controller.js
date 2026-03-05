@@ -4,10 +4,12 @@ import { ApiResponse } from '../utils/ApiResponse.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 
 const bookTicket = asyncHandler(async (req, res) => {
-    const { user_id, event_id, ticket_quantity = 1 } = req.body;
+    const { event_id, ticket_quantity = 1 } = req.body;
 
-    if (!user_id || !event_id) {
-        throw new ApiError(400, "user_id and event_id are required");
+    const user_id = req.user.id; 
+
+    if (!event_id) {
+        throw new ApiError(400, "event_id is required");
     }
 
     const client = await pool.connect();
