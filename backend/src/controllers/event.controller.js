@@ -45,4 +45,46 @@ const getAllEvents = asyncHandler(async (req, res) => {
     );
 });
 
-export { createEvent, getAllEvents };
+const getOrganizerAnalytics = asyncHandler(async (req, res) => {
+
+    const organizerId = req.user.id;
+
+    const query = `
+        SELECT 
+            e.id AS event_id,
+            e.title,
+            e.event_date,
+            e.total_seats,
+            e.available_seats,
+            e.price,
+            (e.total_seats - e.available_seats) AS tickets_sold,
+            ((e.total_seats - e.available_seats) * e.price) AS total_revenue,
+            
+            -- This magic function packs all the attendees into a JSON array!
+            COALESCE(
+                json_agg(
+                    json_build_object(
+                        'attendee_name', u.name,
+                        'attendee_email', u.email,
+                        'ticket_quantity', b.ticket_quantity,
+                        'booked_at', b.booked_at
+                    )
+                ) FILTER (WHERE b.id IS NOT NULL), '[]'
+            ) AS recent_bookings
+            
+        FROM events e
+        LEFT JOIN bookings b ON e.id = b.event_id
+        LEFT JOIN users u ON b.user_id = u.id
+        WHERE e.organizer_id = $1
+        GROUP BY e.id
+        ORDER BY e.created_at DESC;
+    `;
+
+    const result = await pool.query(query, [organizerId]);
+
+    return res.status(200).json(
+        new ApiResponse(200, result.rows, "Organizer analytics fetched successfully!")
+    );
+});
+
+export { createEvent, getAllEvents, getOrganizerAnalytics };
