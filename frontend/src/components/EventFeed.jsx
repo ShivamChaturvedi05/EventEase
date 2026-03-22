@@ -27,34 +27,55 @@ const EventFeed = () => {
         fetchEvents();
     }, []);
 
-    // Handle the ticket booking
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const paymentStatus = urlParams.get('payment_status');
+        const returnedEventId = urlParams.get('event_id');
+
+        if (paymentStatus === 'success' && returnedEventId) {
+            const finalizeBooking = async () => {
+                try {
+                    await axiosInstance.post('/bookings/book', {
+                        event_id: returnedEventId,
+                        ticket_quantity: 1
+                    });
+                    
+                    window.history.replaceState(null, '', window.location.pathname);
+                    
+                    window.location.reload(); 
+                    
+                } catch (error) {
+                    console.error("Failed to finalize booking:", error);
+                    alert("Payment succeeded, but database update failed. Contact support.");
+                }
+            };
+            
+            finalizeBooking();
+        }
+    }, []);
+
     const handleBookTicket = async (eventId) => {
         setBookingId(eventId);
         setBookingMessage('');
 
         try {
-            // We only need to send event_id and quantity. The backend extracts the secure user_id from the cookie!
-            await axiosInstance.post('/bookings/book', {
+            const response = await axiosInstance.post('/bookings/create-checkout-session', {
                 event_id: eventId,
                 ticket_quantity: 1
             });
-            
-            setBookingMessage('🎉 Ticket booked successfully!');
-            
-            // Optionally: Update the local state to decrease available seats without refreshing the page!
-            setEvents(events.map(event => 
-                event.id === eventId 
-                ? { ...event, available_seats: event.available_seats - 1 } 
-                : event
-            ));
+
+            const checkoutUrl = response.data.data.checkoutUrl;
+
+            if (checkoutUrl) {
+                window.location.href = checkoutUrl;
+            } else {
+                throw new Error("No checkout URL received");
+            }
 
         } catch (err) {
-            alert(err.response?.data?.message || 'Booking failed');
-        } finally {
+            console.error("Payment initiation failed:", err);
+            alert(err.response?.data?.message || 'Could not connect to payment gateway.');
             setBookingId(null);
-            
-            // Clear the success message after 3 seconds
-            setTimeout(() => setBookingMessage(''), 3000);
         }
     };
 
