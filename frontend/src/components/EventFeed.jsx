@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import axiosInstance from '../api/axiosInstance';
 
 const EventFeed = () => {
@@ -9,6 +9,7 @@ const EventFeed = () => {
     // State to track which event is currently being booked so we can show a spinner on that specific button
     const [bookingId, setBookingId] = useState(null); 
     const [bookingMessage, setBookingMessage] = useState('');
+    const hasBooked = useRef(false);
 
     // Fetch events as soon as the component loads
     useEffect(() => {
@@ -32,7 +33,8 @@ const EventFeed = () => {
         const paymentStatus = urlParams.get('payment_status');
         const returnedEventId = urlParams.get('event_id');
 
-        if (paymentStatus === 'success' && returnedEventId) {
+        if (paymentStatus === 'success' && returnedEventId && !hasBooked.current) {
+            hasBooked.current = true;
             const finalizeBooking = async () => {
                 try {
                     await axiosInstance.post('/bookings/book', {
